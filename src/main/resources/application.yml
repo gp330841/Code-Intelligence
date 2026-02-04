@@ -16,11 +16,25 @@ spring:
           host: ${CHROMA_HOST:http://localhost}
           port: ${CHROMA_PORT:8000}
         initialize-schema: true
+  
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
 
 logging:
+  file:
+    name: application.log
   level:
     org.springframework.ai: DEBUG
     org.springframework.web: INFO
+    com.codeintelligence: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,logfile
 
 springdoc:
   api-docs:

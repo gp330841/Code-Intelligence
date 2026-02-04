@@ -23,6 +23,8 @@ public class VectorInspectionController {
     @Value("${spring.ai.vectorstore.chroma.client.port}")
     private int chromaPort;
 
+    private final RestClient.Builder restClientBuilder;
+
     @GetMapping
     public ResponseEntity<?> getAllVectors() {
         String chromaUrl = chromaHost + ":" + chromaPort;
@@ -31,7 +33,7 @@ public class VectorInspectionController {
         // note: we first need the UUID, but commonly we can try list or get by name if supported.
         // Actually, Spring AI uses `SpringAiCollection`.
         
-        RestClient client = RestClient.create();
+        RestClient client = restClientBuilder.build();
         
         try {
             // 1. Get Collection ID for "SpringAiCollection"
@@ -66,7 +68,7 @@ public class VectorInspectionController {
     @GetMapping("/content")
     public ResponseEntity<?> getCollectionContent() {
          String chromaUrl = chromaHost + ":" + chromaPort;
-         RestClient client = RestClient.create();
+         RestClient client = restClientBuilder.build();
          
          try {
              // Fetch collections to find the ID of 'SpringAiCollection'
@@ -104,19 +106,19 @@ public class VectorInspectionController {
              
              try {
                 // explicit include to be safe
-                Map<String, Object> body = Map.of(
+                Map<String, Object> bodyMap = Map.of(
                     "limit", 100,
                     "include", java.util.List.of("documents", "metadatas")
                 );
              
-                Map<String, Object> response = client.post()
+                Map response = client.post()
                     .uri(chromaUrl + "/api/v1/collections/" + collectionId + "/get")
                     .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                    .body(body)
+                    .body(bodyMap)
                     .retrieve()
                     .body(Map.class);
                 
-                log.info("Fetch success. Keys: {}", response != null ? response.keySet() : "null");
+                log.info("Fetch success.");
                 return ResponseEntity.ok(response);
              
              } catch (org.springframework.web.client.RestClientResponseException e) {
@@ -131,5 +133,6 @@ public class VectorInspectionController {
               log.error("Failed to fetch content from Chroma at {}", chromaUrl, e);
               return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
          }
+
     }
 }

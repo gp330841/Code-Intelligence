@@ -29,5 +29,17 @@ out/
 /nbdist/
 /.nb-gradle/
 
+
 ### VS Code ###
 .vscode/
+
+### System ###
+.DS_Store
+Thumbs.db
+
+### Application ###
+*.log
+application.log
+logs/
+temp/
+
