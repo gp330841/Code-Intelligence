@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: code-intelligence
+
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        model: deepseek-r1 # or codellama
+      embedding:
+        model: nomic-embed-text
+    
+    vectorstore:
+      chroma:
+        client:
+          host: ${CHROMA_HOST:http://localhost}
+          port: ${CHROMA_PORT:8000}
+        initialize-schema: true
+
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    org.springframework.web: INFO
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

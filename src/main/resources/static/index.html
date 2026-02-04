@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Intelligence Agent</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --chat-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --primary-color: #3b82f6;
+            --secondary-color: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--chat-bg);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1e293b;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .brand .status {
+            font-size: 0.75rem;
+            color: #10b981;
+        }
+
+        /* Load Project Section */
+        .ingestion-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #0f172a;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        input[type="file"] {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            max-width: 250px;
+        }
+
+        input[type="file"]::file-selector-button {
+            background-color: #334155;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+
+        #upload-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        #upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* View Toggles */
+        .view-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .view-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .view-btn.active {
+            background: #334155;
+            color: white;
+            border-color: #475569;
+        }
+
+        /* Content Areas */
+        #chat-view,
+        #data-view {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        #data-view {
+            display: none;
+            padding: 1.5rem;
+        }
+
+        #chat-history {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            max-width: 85%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message.agent {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .bubble {
+            padding: 1rem;
+            border-radius: 1rem;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .user .bubble {
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .agent .bubble {
+            background-color: #334155;
+            color: var(--text-color);
+            border-bottom-left-radius: 0.25rem;
+            white-space: pre-wrap;
+        }
+
+        /* Data Table */
+        .data-table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th,
+        td {
+            border: 1px solid #334155;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background: #0f172a;
+            position: sticky;
+            top: 0;
+        }
+
+        pre.cell-content {
+            margin: 0;
+            max-height: 100px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #cbd5e1;
+        }
+
+        /* Footer */
+        .input-area {
+            padding: 1.5rem;
+            border-top: 1px solid #334155;
+            display: flex;
+            gap: 1rem;
+            background: #1e293b;
+        }
+
+        #query-input {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid #475569;
+            background-color: #0f172a;
+            color: white;
+            outline: none;
+        }
+
+        #query-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        #send-btn {
+            padding: 0 2rem;
+            border-radius: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <div class="brand">
+                    <h1>Code Intelligence</h1>
+                    <div class="status">Agent Online</div>
+                </div>
+
+                <div class="ingestion-controls">
+                    <!-- Folder Picker -->
+                    <input type="file" id="folder-input" webkitdirectory directory multiple>
+                    <button id="upload-btn" onclick="uploadProject()">Load Project</button>
+                    <!-- Fallback Path Input (Hidden unless needed, but removing to declutter as requested) -->
+                </div>
+            </div>
+
+            <div class="view-controls">
+                <button class="view-btn active" onclick="switchView('chat')" id="btn-chat">Chat</button>
+                <button class="view-btn" onclick="loadData()" id="btn-data">Inspect DB</button>
+            </div>
+        </header>
+
+        <div id="chat-view">
+            <div id="chat-history">
+                <div class="message agent">
+                    <div class="bubble"><b>Welcome!</b><br>To begin, please select your project folder using the "Choose
+                        Files" button above and click <b>Load Project</b>.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="data-view">
+            <h2>ChromaDB Vectors</h2>
+            <div id="data-content">Click 'Inspect DB' to load data.</div>
+        </div>
+
+        <div class="input-area" id="footer-input">
+            <input type="text" id="query-input" placeholder="Ask about the code..."
+                onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()" id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function switchView(view) {
+            document.getElementById('img-chat-view').style.display = view === 'chat' ? 'block' : 'none'; // Typo protection if I used images? No.
+
+            const chatView = document.getElementById('chat-view');
+            const dataView = document.getElementById('data-view');
+            const footer = document.getElementById('footer-input');
+            const btnChat = document.getElementById('btn-chat');
+            const btnData = document.getElementById('btn-data');
+
+            if (view === 'chat') {
+                chatView.style.display = 'block';
+                dataView.style.display = 'none';
+                footer.style.display = 'flex';
+                btnChat.classList.add('active');
+                btnData.classList.remove('active');
+            } else {
+                chatView.style.display = 'none';
+                dataView.style.display = 'block';
+                footer.style.display = 'none';
+                btnChat.classList.remove('active');
+                btnData.classList.add('active');
+            }
+        }
+
+        async function uploadProject() {
+            const input = document.getElementById('folder-input');
+            const btn = document.getElementById('upload-btn');
+
+            if (input.files.length === 0) {
+                alert("Please select a folder first!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Uploading...";
+
+            const formData = new FormData();
+            for (const file of input.files) {
+                // Determine path. Some browsers prioritize webkitRelativePath
+                formData.append("files", file);
+            }
+
+            try {
+                // Note: We use the new upload endpoint
+                const response = await fetch('/api/ingest/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const text = await response.text();
+
+                if (!response.ok) throw new Error(text);
+
+                // Notify in Chat
+                switchView('chat');
+                const history = document.getElementById('chat-history');
+                history.innerHTML += `
+                    <div class="message agent">
+                        <div class="bubble" style="border-left: 4px solid #10b981;">
+                            <b>System:</b> ${text}
+                        </div>
+                    </div>
+                `;
+                history.scrollTo(0, history.scrollHeight);
+
+            } catch (err) {
+                alert("Upload Failed: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Load Project";
+            }
+        }
+
+        async function loadData() {
+            switchView('data');
+            const container = document.getElementById('data-content');
+            container.innerHTML = "Fetching vectors...";
+
+            try {
+                const response = await fetch('/api/vectors/content');
+                if (!response.ok) throw new Error(await response.text());
+
+                const data = await response.json();
+
+                if (data.ids && data.ids.length > 0) {
+                    let html = `<div class='data-table-wrapper'><table><thead><tr><th>ID</th><th>Content</th><th>Metadata</th></tr></thead><tbody>`;
+
+                    for (let i = 0; i < data.ids.length; i++) {
+                        const id = data.ids[i];
+                        const doc = data.documents[i] || "";
+                        const meta = data.metadatas[i] || {};
+
+                        html += `<tr>
+                            <td><b>${id}</b></td>
+                            <td><pre class="cell-content">${escapeHtml(doc)}</pre></td>
+                            <td><pre class="cell-content">${JSON.stringify(meta, null, 2)}</pre></td>
+                        </tr>`;
+                    }
+                    html += `</tbody></table></div>`;
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = "<p>No vectors found. Load a project first.</p>";
+                }
+            } catch (err) {
+                container.innerHTML = `<p style="color:red">Error: ${err.message}</p>`;
+            }
+        }
+
+        // Chat Logic
+        async function sendMessage() {
+            const input = document.getElementById('query-input');
+            const btn = document.getElementById('send-btn');
+            const history = document.getElementById('chat-history');
+            const query = input.value.trim();
+
+            if (!query) return;
+
+            history.innerHTML += `<div class="message user"><div class="bubble">${escapeHtml(query)}</div></div>`;
+            input.value = '';
+            btn.disabled = true;
+            history.scrollTo(0, history.scrollHeight);
+
+            const loadingId = 'sys-' + Date.now();
+            history.innerHTML += `<div class="message agent" id="${loadingId}"><div class="bubble">Thinking...</div></div>`;
+            history.scrollTo(0, history.scrollHeight);
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: query
+                });
+
+                const text = await response.text();
+                document.getElementById(loadingId).remove();
+                history.innerHTML += `<div class="message agent"><div class="bubble">${formatMessage(text)}</div></div>`;
+
+            } catch (err) {
+                document.getElementById(loadingId).remove();
+                history.innerHTML += `<div class="message agent"><div class="bubble" style="color:#ef4444">Error: ${err.message}</div></div>`;
+            }
+
+            btn.disabled = false;
+            history.scrollTo(0, history.scrollHeight);
+            input.focus();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function formatMessage(text) {
+            if (!text) return "";
+            return escapeHtml(text).replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+        }
+    </script>
+</body>
+
+</html>

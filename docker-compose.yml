@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    container_name: code-intelligence
+    ports:
+      - "8080:8080"
+    environment:
+      # Connect to ChromaDB running in Docker service
+      - CHROMA_HOST=http://chromadb
+      - CHROMA_PORT=8000
+      # Connect to Ollama running on the Host Machine
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    volumes:
+      - ./src:/app/src
+      # Mirror user's workspace so absolute paths work
+      - /Users/yogeshwarpatel/Workspace:/Users/yogeshwarpatel/Workspace:ro
+    depends_on:
+      - chromadb
+
+  chromadb:
+    image: chromadb/chroma:0.4.24
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
+volumes:
+  chroma_data:
