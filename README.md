@@ -19,6 +19,23 @@ A powerful RAG-based Code Intelligence Agent built with Java, Spring Boot, and S
 - **Frontend**: HTML5, Vanilla JS, Highlight.js, Marked.js
 - **Containerization**: Docker, Docker Compose
 
+
+## System Architecture
+
+> **Note**: For a deep dive into System Design, Trade-offs, and failure scenarios please see [SENIOR_ENGINEER_INTERVIEW_GUIDE.md](SENIOR_ENGINEER_INTERVIEW_GUIDE.md).
+
+### Overview
+Microservices architecture using Docker Compose.
+
+```mermaid
+graph TD
+    User[User / Browser] -->|HTTP| Frontend[Frontend (React + Nginx)]
+    Frontend -->|API Requests| Backend[Backend (Spring Boot)]
+    Backend -->|gRPC| Chroma[ChromaDB (Vector Store)]
+    Backend -->|HTTP| Ollama[Ollama (Inference)]
+    Backend -->|Read| FS[File System]
+```
+
 ## Prerequisites
 
 1.  **Docker Desktop**: Installed and running.
@@ -32,7 +49,7 @@ A powerful RAG-based Code Intelligence Agent built with Java, Spring Boot, and S
     ```bash
     docker-compose up --build --force-recreate
     ```
-2.  **Access UI**: Open `http://localhost:8080` in your browser.
+2.  **Access UI**: Open `http://localhost:3000` in your browser.
 
 ## How to Use
 
@@ -67,3 +84,9 @@ A powerful RAG-based Code Intelligence Agent built with Java, Spring Boot, and S
 
 ---
 Built with ❤️ by Code Intelligence Team.
+
+
+
+
+
+
